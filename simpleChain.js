@@ -5,6 +5,25 @@
 const SHA256 = require('crypto-js/sha256');
 
 
+/* ===== Persist data with LevelDB ============================
+|  Learn more: level: https://github.com/Level/level          |
+|  ==========================================================*/
+
+const level = require('level');
+const chainDB = './chaindata';
+const db = level(chainDB);
+
+
+/* ============================================================
+|  import functions from levelSandbox.js                      |
+|  ============================================================*/
+
+const levelSandbox = require('./levelSandbox')
+// console.log(levelSandbox.addLevelDBData)
+// console.log(levelSandbox.getLevelDBData)
+// console.log(levelSandbox.addDataToLevelDB)
+
+
 /* ===== Block Class ==============================
 |  Class with a constructor for block 			   |
 |  ===============================================*/
@@ -42,7 +61,9 @@ class Blockchain{
     // Block hash with SHA256 using newBlock and converting to a string
     newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
     // Adding block object to chain
-  	this.chain.push(newBlock);
+    this.chain.push(newBlock);
+    // Adding block object to levelDB
+    levelSandbox.addLevelDBData(newBlock.height, newBlock); // define key & value
   }
 
   // Get block height
@@ -53,7 +74,8 @@ class Blockchain{
     // get block
     getBlock(blockHeight){
       // return object as a single string
-      return JSON.parse(JSON.stringify(this.chain[blockHeight]));
+      // return JSON.parse(JSON.stringify(this.chain[blockHeight]));
+      return JSON.parse(JSON.stringify(levelSandbox.getLevelDBData[blockHeight]);
     }
 
     // validate block
@@ -96,3 +118,11 @@ class Blockchain{
       }
     }
 }
+
+
+(function theLoop (i) {
+  setTimeout(function () {
+    addDataToLevelDB('Testing data');
+    if (--i) theLoop(i);
+  }, 100);
+})(10);
