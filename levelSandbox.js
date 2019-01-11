@@ -9,20 +9,23 @@
 
 module.exports = {
   // Add data to levelDB with key/value pair
-  addLevelDBData: function(key,value, db){
+  addLevelDBData: function(db, key, value){
     // console.log(key, value);
     // console.log(db)
     db.put(key, JSON.stringify(value), function(err) {
       if (err) return console.log('Block ' + key + ' submission failed', err);
-    })
+    });
   },
 
   // Get data from levelDB with key
-  getLevelDBData: function(key){
+  getLevelDBData: function(db, key){
+    // console.log(key)
+    // console.log(db)
     db.get(key, function(err, value) {
       if (err) return console.log('Not found!', err);
       console.log('Value = ' + value);
-    })
+      return value;
+    });
   },
 
   // Add data to levelDB with value

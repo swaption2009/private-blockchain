@@ -27,7 +27,7 @@ const levelSandbox = require('./levelSandbox')
 |  ===============================================*/
 
 class Block{
-	constructor(data){
+  constructor(data) {
      this.hash = "",
      this.height = 0,
      this.body = data,
@@ -41,19 +41,19 @@ class Block{
 |  ================================================*/
 
 class Blockchain{
-  constructor(){
+  constructor() {
     this.chain = [];
     this.addBlock(new Block("First block in the chain - Genesis block"));
   }
 
   // Add new block
-  addBlock(newBlock){
+  addBlock(newBlock) {
     // Block height
     newBlock.height = this.chain.length;
     // UTC timestamp
     newBlock.time = new Date().getTime().toString().slice(0,-3);
     // previous block hash
-    if(this.chain.length>0){
+    if(this.chain.length>0) {
       newBlock.previousBlockHash = this.chain[this.chain.length-1].hash;
     }
     // Block hash with SHA256 using newBlock and converting to a string
@@ -61,23 +61,25 @@ class Blockchain{
     // Adding block object to chain
     this.chain.push(newBlock);
     // Adding block object to levelDB
-    levelSandbox.addLevelDBData(newBlock.height, newBlock, db);
+    levelSandbox.addLevelDBData(db, newBlock.height, newBlock);
   }
 
   // Get block height
-    getBlockHeight(){
-      return this.chain.length-1;
+    getBlockHeight() {
+      let lastIndex = this.chain.length - 1;
+      let returnedBlockHeight = levelSandbox.getLevelDBData(db, lastIndex); // need to make async
+      return returnedBlockHeight
     }
 
     // get block
-    getBlock(blockHeight){
+    getBlock(blockHeight) {
       // return object as a single string
-      // return JSON.parse(JSON.stringify(this.chain[blockHeight]));
-      return JSON.parse(JSON.stringify(levelSandbox.getLevelDBData[blockHeight]));
+      let returnedBlock = levelSandbox.getLevelDBData(db, blockHeight);  // need to make async
+      return returnedBlock
     }
 
     // validate block
-    validateBlock(blockHeight){
+    validateBlock(blockHeight) {
       // get block object
       let block = this.getBlock(blockHeight);
       // get block hash
@@ -96,7 +98,7 @@ class Blockchain{
     }
 
    // Validate blockchain
-    validateChain(){
+    validateChain() {
       let errorLog = [];
       for (var i = 0; i < this.chain.length-1; i++) {
         // validate block
@@ -117,9 +119,38 @@ class Blockchain{
     }
 }
 
+// clear "chaindata" folder if exists
+const fs = require('fs');
+const path = require('path');
+const dir = path.join(path.dirname(fs.realpathSync(__filename)), './chaindata');
+
+const exec = require('child_process').exec;
+exec('rm -Rf dir');
+
+
+// create blockchain with Genesis block and additional 10 blocks and save to levelDB
 let blockchain = new Blockchain();
 
 for (var i = 0; i <= 10; i++) {
   blockchain.addBlock(new Block("test data "+i));
 }
 
+
+// validate a block using block height (or leveldb key) from levelDB
+// blockchain.validateBlock(2);
+/*
+Value = {"hash":"b830b838a173883204dd8848f01a4ed26013cff64a7f92555ad554ac19ff5678",
+         "height":2,"body":"test data 1","time":"1547194102",
+         "previousBlockHash":"f8552f1c93f53f4eb0abc0b6a44885d70f21d6a5fcd1a56b0ed77dfec13c041b"}
+*/
+
+
+// Get the last block from levelDB
+blockchain.getBlockHeight();
+/*
+Value = {"hash":"74325bb4335c785cf12e7a02319067736d11f240be1b3e76dfcda3e77a7b6a80",
+         "height":11,"body":"test data 10","time":"1547195321",
+         "previousBlockHash":"d174c93b81990df2880d0baef6fa96e8d533dfd6889c431ab25c84c034af6b29"}
+*/
+
+blockchain.validateChain;
