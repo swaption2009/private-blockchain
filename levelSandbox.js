@@ -9,8 +9,10 @@
 
 module.exports = {
   // Add data to levelDB with key/value pair
-  addLevelDBData: function(key,value){
-    db.put(key, value, function(err) {
+  addLevelDBData: function(key,value, db){
+    // console.log(key, value);
+    // console.log(db)
+    db.put(key, JSON.stringify(value), function(err) {
       if (err) return console.log('Block ' + key + ' submission failed', err);
     })
   },

@@ -20,8 +20,6 @@ const db = level(chainDB);
 
 const levelSandbox = require('./levelSandbox')
 // console.log(levelSandbox.addLevelDBData)
-// console.log(levelSandbox.getLevelDBData)
-// console.log(levelSandbox.addDataToLevelDB)
 
 
 /* ===== Block Class ==============================
@@ -63,7 +61,7 @@ class Blockchain{
     // Adding block object to chain
     this.chain.push(newBlock);
     // Adding block object to levelDB
-    levelSandbox.addLevelDBData(newBlock.height, newBlock); // define key & value
+    levelSandbox.addLevelDBData(newBlock.height, newBlock, db);
   }
 
   // Get block height
@@ -75,7 +73,7 @@ class Blockchain{
     getBlock(blockHeight){
       // return object as a single string
       // return JSON.parse(JSON.stringify(this.chain[blockHeight]));
-      return JSON.parse(JSON.stringify(levelSandbox.getLevelDBData[blockHeight]);
+      return JSON.parse(JSON.stringify(levelSandbox.getLevelDBData[blockHeight]));
     }
 
     // validate block
@@ -119,10 +117,9 @@ class Blockchain{
     }
 }
 
+let blockchain = new Blockchain();
 
-(function theLoop (i) {
-  setTimeout(function () {
-    addDataToLevelDB('Testing data');
-    if (--i) theLoop(i);
-  }, 100);
-})(10);
+for (var i = 0; i <= 10; i++) {
+  blockchain.addBlock(new Block("test data "+i));
+}
+
