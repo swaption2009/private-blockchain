@@ -12,8 +12,11 @@ module.exports = {
   addLevelDBData: function(db, key, value){
     // console.log(key, value);
     // console.log(db)
-    db.put(key, JSON.stringify(value), function(err) {
-      if (err) return console.log('Block ' + key + ' submission failed', err);
+    return new Promise(function(resolve, reject) {
+      db.put(key, JSON.stringify(value), function(err) {
+        if (err) return console.log('Block ' + key + ' submission failed', err);
+        resolve(value)
+      });
     });
   },
 

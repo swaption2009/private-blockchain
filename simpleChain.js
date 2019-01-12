@@ -63,7 +63,10 @@ class Blockchain{
     // Adding block object to chain
     this.chain.push(newBlock);
     // Adding block object to levelDB
-    addLevelDBData(db, newBlock.height, newBlock);
+    addLevelDBData(db, newBlock.height, newBlock).then(function(res) {
+      console.log('This block has been added to levelDB: ');
+      console.log(res);
+    });
   }
 
   // Get block height
@@ -144,7 +147,7 @@ for (var i = 0; i <= 10; i++) {
 
 // validate a block using block height (or leveldb key) from levelDB
 // blockchain.getBlock(2);
-blockchain.validateBlock(2);
+// blockchain.validateBlock(2);
 /*
 Value = {"hash":"b830b838a173883204dd8848f01a4ed26013cff64a7f92555ad554ac19ff5678",
          "height":2,"body":"test data 1","time":"1547194102",
