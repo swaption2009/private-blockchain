@@ -21,10 +21,12 @@ module.exports = {
   getLevelDBData: function(db, key){
     // console.log(key)
     // console.log(db)
-    db.get(key, function(err, value) {
-      if (err) return console.log('Not found!', err);
-      console.log('Value = ' + value);
-      return value;
+    return new Promise(function(resolve, reject) {
+      db.get(key, function(err, value) {
+        if (err) return console.log('Not found!', err);
+        // console.log('Value = ' + value);
+        resolve(value);
+      });
     });
   },
 

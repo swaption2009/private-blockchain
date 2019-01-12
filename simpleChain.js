@@ -18,8 +18,10 @@ const db = level(chainDB);
 |  import functions from levelSandbox.js                      |
 |  ============================================================*/
 
-const levelSandbox = require('./levelSandbox')
-// console.log(levelSandbox.addLevelDBData)
+const levelSandbox = require('./levelSandbox');
+let addLevelDBData = levelSandbox.addLevelDBData;
+let getLevelDBData = levelSandbox.getLevelDBData;
+let addDataToLevelDB = levelSandbox.addDataToLevelDB;
 
 
 /* ===== Block Class ==============================
@@ -61,21 +63,25 @@ class Blockchain{
     // Adding block object to chain
     this.chain.push(newBlock);
     // Adding block object to levelDB
-    levelSandbox.addLevelDBData(db, newBlock.height, newBlock);
+    addLevelDBData(db, newBlock.height, newBlock);
   }
 
   // Get block height
     getBlockHeight() {
       let lastIndex = this.chain.length - 1;
-      let returnedBlockHeight = levelSandbox.getLevelDBData(db, lastIndex); // need to make async
-      return returnedBlockHeight
-    }
+      let returnedBlockHeight = getLevelDBData(db, lastIndex);
+      returnedBlockHeight.then(function(res) {
+        return res;
+      });
+    };
 
     // get block
     getBlock(blockHeight) {
       // return object as a single string
-      let returnedBlock = levelSandbox.getLevelDBData(db, blockHeight);  // need to make async
-      return returnedBlock
+      let returnedBlock = levelSandbox.getLevelDBData(db, blockHeight);
+      returnedBlock.then(function(res) {
+        return res;
+      });
     }
 
     // validate block
@@ -137,7 +143,8 @@ for (var i = 0; i <= 10; i++) {
 
 
 // validate a block using block height (or leveldb key) from levelDB
-// blockchain.validateBlock(2);
+// blockchain.getBlock(2);
+blockchain.validateBlock(2);
 /*
 Value = {"hash":"b830b838a173883204dd8848f01a4ed26013cff64a7f92555ad554ac19ff5678",
          "height":2,"body":"test data 1","time":"1547194102",
@@ -146,11 +153,13 @@ Value = {"hash":"b830b838a173883204dd8848f01a4ed26013cff64a7f92555ad554ac19ff567
 
 
 // Get the last block from levelDB
-blockchain.getBlockHeight();
+// blockchain.getBlockHeight();
 /*
 Value = {"hash":"74325bb4335c785cf12e7a02319067736d11f240be1b3e76dfcda3e77a7b6a80",
          "height":11,"body":"test data 10","time":"1547195321",
          "previousBlockHash":"d174c93b81990df2880d0baef6fa96e8d533dfd6889c431ab25c84c034af6b29"}
 */
 
-blockchain.validateChain;
+// blockchain.validateChain;
+
+
