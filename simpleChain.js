@@ -28,21 +28,21 @@ let addDataToLevelDB = levelSandbox.addDataToLevelDB;
 |  Class with a constructor for block 			   |
 |  ===============================================*/
 
-class Block{
+class Block {
   constructor(data) {
-     this.hash = "",
-     this.height = 0,
-     this.body = data,
-     this.time = 0,
-     this.previousBlockHash = ""
-    }
-}
+    this.hash = "",
+    this.height = 0,
+    this.body = data,
+    this.time = 0,
+    this.previousBlockHash = ""
+  };
+};
 
 /* ===== Blockchain Class ==========================
 |  Class with a constructor for new blockchain 		|
 |  ================================================*/
 
-class Blockchain{
+class Blockchain {
   constructor() {
     this.chain = [];
     this.addBlock(new Block("First block in the chain - Genesis block"));
@@ -64,69 +64,82 @@ class Blockchain{
     this.chain.push(newBlock);
     // Adding block object to levelDB
     addLevelDBData(db, newBlock.height, newBlock).then(function(res) {
-      console.log('This block has been added to levelDB: ');
-      console.log(res);
+      // console.log('This block has been added to levelDB: ');
+      // console.log(res);
     });
   }
 
   // Get block height
-    getBlockHeight() {
-      let lastIndex = this.chain.length - 1;
-      let returnedBlockHeight = getLevelDBData(db, lastIndex);
-      returnedBlockHeight.then(function(res) {
-        return res;
-      });
-    };
+  getBlockHeight() {
+    let lastIndex = this.chain.length - 1;
+    let returnedBlockHeight = getLevelDBData(db, lastIndex);
+    returnedBlockHeight.then(function(res) {
+      return res;
+    });
+  }
 
-    // get block
-    getBlock(blockHeight) {
-      // return object as a single string
+  // get block
+  getBlock(blockHeight) {
+    return new Promise(function(resolve, reject) {
       let returnedBlock = levelSandbox.getLevelDBData(db, blockHeight);
       returnedBlock.then(function(res) {
-        return res;
+        resolve(res);
       });
-    }
+    });
+  }
 
-    // validate block
-    validateBlock(blockHeight) {
-      // get block object
-      let block = this.getBlock(blockHeight);
+  // validate block
+  validateBlock(blockHeight) {
+    // get block object
+    let block = this.getBlock(blockHeight);
+    block.then(function(res) {
+      // console.log(typeof(res));
+      // console.log('res :' + JSON.stringify(res));
+      let block_dict = JSON.parse(res);
       // get block hash
-      let blockHash = block.hash;
+      let blockHash = SHA256(block_dict.hash);
+      // console.log('blockHash: ' + blockHash)
       // remove block hash to test block integrity
       block.hash = '';
       // generate block hash
       let validBlockHash = SHA256(JSON.stringify(block)).toString();
+      // console.log('validBlockHash :' + validBlockHash);
       // Compare
       if (blockHash===validBlockHash) {
-          return true;
-        } else {
-          console.log('Block #'+blockHeight+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
-          return false;
-        }
-    }
-
-   // Validate blockchain
-    validateChain() {
-      let errorLog = [];
-      for (var i = 0; i < this.chain.length-1; i++) {
-        // validate block
-        if (!this.validateBlock(i))errorLog.push(i);
-        // compare blocks hash link
-        let blockHash = this.chain[i].hash;
-        let previousHash = this.chain[i+1].previousBlockHash;
-        if (blockHash!==previousHash) {
-          errorLog.push(i);
-        }
-      }
-      if (errorLog.length>0) {
-        console.log('Block errors = ' + errorLog.length);
-        console.log('Blocks: '+errorLog);
+        return true;
       } else {
-        console.log('No errors detected');
+        console.log('Block #'+blockHeight+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
+        return false;
+      }
+    });
+  }
+
+ // Validate blockchain
+  validateChain() {
+    let errorLog = [];
+    for (var i = 0; i < this.chain.length-1; i++) {
+      // validate block
+      if (!this.validateBlock(i))errorLog.push(i);
+      // compare blocks hash link
+      let blockHash = this.chain[i].hash;
+      let previousHash = this.chain[i+1].previousBlockHash;
+      if (blockHash!==previousHash) {
+        errorLog.push(i);
       }
     }
+    if (errorLog.length>0) {
+      console.log('Block errors = ' + errorLog.length);
+      console.log('Blocks: '+errorLog);
+    } else {
+      console.log('No errors detected');
+    }
+  }
 }
+
+
+/* ======================================================================
+|  COMMAND LINES TO CREATE BLOCKCHAIN AND SAVE 10 BLOCKS IN LEVELDB     |
+|  =====================================================================*/
 
 // clear "chaindata" folder if exists
 const fs = require('fs');
@@ -145,24 +158,16 @@ for (var i = 0; i <= 10; i++) {
 }
 
 
-// validate a block using block height (or leveldb key) from levelDB
+/* ============================================================
+|  COMMAND LINES TO INTERACT WITH BLOCKCHAIN LEVELDB DATA     |
+|  ============================================================*/
+
 // blockchain.getBlock(2);
+
 // blockchain.validateBlock(2);
-/*
-Value = {"hash":"b830b838a173883204dd8848f01a4ed26013cff64a7f92555ad554ac19ff5678",
-         "height":2,"body":"test data 1","time":"1547194102",
-         "previousBlockHash":"f8552f1c93f53f4eb0abc0b6a44885d70f21d6a5fcd1a56b0ed77dfec13c041b"}
-*/
 
-
-// Get the last block from levelDB
 // blockchain.getBlockHeight();
-/*
-Value = {"hash":"74325bb4335c785cf12e7a02319067736d11f240be1b3e76dfcda3e77a7b6a80",
-         "height":11,"body":"test data 10","time":"1547195321",
-         "previousBlockHash":"d174c93b81990df2880d0baef6fa96e8d533dfd6889c431ab25c84c034af6b29"}
-*/
 
-// blockchain.validateChain;
+// blockchain.validateChain();
 
 
